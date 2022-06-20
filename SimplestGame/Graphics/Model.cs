@@ -1,4 +1,6 @@
+using System.Reflection.Metadata;
 using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 
 namespace SimplestGame.Graphics;
 
@@ -8,10 +10,10 @@ public class Model : IDisposable
     private int indexBuffer;
     private int vertexArray;
 
-    private readonly Shader shader;
+    private readonly DefaultShader shader;
     private readonly int indices;
 
-    public Model(float[] vertices, uint[] indices, Shader shader)
+    public Model(float[] vertices, uint[] indices, DefaultShader shader)
     {
         this.shader = shader;
         this.indices = indices.Length;
@@ -46,8 +48,11 @@ public class Model : IDisposable
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
     }
 
-    public void Render()
+    public void Render(Matrix4 model)
     {
+        // get pparameter from modelinstance
+        this.shader.SetModel(model);
+        
         GL.UseProgram(this.shader.Program);
         GL.BindVertexArray(this.vertexArray);
 

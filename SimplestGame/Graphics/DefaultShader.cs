@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
@@ -11,14 +12,15 @@ public class DefaultShader : Shader
         
         uniform Uniforms
         {
-            mat4 uModel;
             mat4 uView;
             mat4 uProjection;
         };
+        
+        uniform mat4 uModel;
             
-        layout(location = 0) in vec3 aPosition;
+        in vec3 aPosition;
         // We add another input variable for the texture coordinates:
-        layout(location = 1) in vec2 aTexture;
+        in vec2 aTexture;
         // ...However, they aren't needed for the vertex shader itself.
         // Instead, we create an output variable so we can send that data to the fragment shader.
         
@@ -27,7 +29,7 @@ public class DefaultShader : Shader
         void main()
         {
             vTexture = aTexture;
-            gl_Position = uProjection * uView * vec4(aPosition, 1.0);
+            gl_Position = uProjection * uView *  vec4(aPosition, 1.0);
         }
     ";
 
@@ -35,7 +37,7 @@ public class DefaultShader : Shader
     private const string FragmentShader = @"
         #version 410 core 
         
-        out vec4 outputColor;
+        out vec4 fColor;
         
         uniform sampler2D uDiffuse;
         
@@ -43,19 +45,19 @@ public class DefaultShader : Shader
 
         void main()
         {
-            outputColor = texture(uDiffuse, vTexture);
+            fColor = texture(uDiffuse, vTexture);
         }
     ";
     
     private struct Uniforms
     {
-        public Matrix4 Model;
         public Matrix4 View;
         public Matrix4 Projection;
     }
     
     private readonly int uniformBuffer;
-    
+    private readonly int model;
+
     public unsafe DefaultShader() : base(VertexShader, FragmentShader)
     {
         GL.UniformBlockBinding(this.Program, GL.GetUniformBlockIndex(this.Program, "Uniforms"), 0);
@@ -64,7 +66,8 @@ public class DefaultShader : Shader
 
         var uniforms = new Uniforms
         {
-            Model = Matrix4.Identity,View = Matrix4.Identity, Projection = Matrix4.Identity
+            View = Matrix4.Identity, 
+            Projection = Matrix4.Identity
         };
         
         GL.BindBuffer(BufferTarget.UniformBuffer, this.uniformBuffer);
@@ -72,14 +75,16 @@ public class DefaultShader : Shader
         GL.BindBuffer(BufferTarget.UniformBuffer,0);
         
         GL.BindBufferRange(BufferRangeTarget.UniformBuffer, 0, this.uniformBuffer, IntPtr.Zero, sizeof(Uniforms));
+
+        this.model = GL.GetUniformLocation(this.Program, "uModel");
     }
 
-    public unsafe void SetUniforms(Camera camera, double gameTime)
+    public unsafe void SetCamera(Camera camera)
     {
         var uniforms = new Uniforms
         {
-            Model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(gameTime)), View = camera.GetViewMatrix(), Projection = camera.GetProjectionMatrix()
-            
+            View = camera.View,
+            Projection = camera.Projection
         };
 
         GL.BindBuffer(BufferTarget.UniformBuffer, this.uniformBuffer);
@@ -87,6 +92,10 @@ public class DefaultShader : Shader
         GL.BindBuffer(BufferTarget.UniformBuffer,0);
     }
 
+    public void SetModel(Matrix4 model)
+    {
+        GL.UniformMatrix4(this.model, false, ref model);
+    }
     public override void Dispose()
     {
         GL.DeleteBuffer(this.uniformBuffer);
