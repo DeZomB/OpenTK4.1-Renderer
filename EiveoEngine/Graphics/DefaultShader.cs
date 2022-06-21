@@ -1,5 +1,6 @@
 namespace EiveoEngine.Graphics;
 
+using Cameras;
 using JetBrains.Annotations;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;

@@ -1,5 +1,6 @@
 namespace SimplestGame;
 
+using EiveoEngine.Cameras;
 using EiveoEngine.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -93,7 +94,7 @@ public class Game : GameWindow
 		this.texture = new Texture(pixels, image.Width, image.Height);
 		this.modelInstance = new ModelInstance(this.model, this.texture, this.shader) { Scale = new Vector3(10) };
 
-		this.camera = new Camera { Postion = Vector3.UnitZ * 10 };
+		this.camera = new PerspectiveCamera { Postion = Vector3.UnitZ * 10 };
 	}
 
 	protected override void OnUnload()
@@ -161,7 +162,8 @@ public class Game : GameWindow
 			this.camera.Pitch = Math.Clamp(this.camera.Pitch - this.MouseState.Delta.Y * sensitivity, -89, 89);
 		}
 
-		this.camera.Fov -= this.MouseState.ScrollDelta.Y;
+		if (this.camera is PerspectiveCamera perspectiveCamera)
+			perspectiveCamera.Fov -= this.MouseState.ScrollDelta.Y;
 	}
 
 	protected override void OnRenderFrame(FrameEventArgs args)

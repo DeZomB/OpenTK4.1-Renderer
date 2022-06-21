@@ -1,21 +1,20 @@
-namespace EiveoEngine.Graphics;
+namespace EiveoEngine.Cameras;
 
 using OpenTK.Mathematics;
 
-public class Camera
+public abstract class Camera
 {
 	public float Pitch;
 	public float Yaw = -90;
-
-	public float Fov = 90;
+	public float Roll;
 
 	public Vector3 Postion;
 
 	public Vector3 Forward { get; private set; }
 	public Vector3 Right { get; private set; }
 
-	public Matrix4 View = Matrix4.Identity;
-	public Matrix4 Projection = Matrix4.Identity;
+	public Matrix4 View { get; private set; }
+	public Matrix4 Projection { get; private set; }
 
 	public void Update(Vector2 size)
 	{
@@ -28,7 +27,10 @@ public class Camera
 
 		this.Right = Vector3.Cross(this.Forward, Vector3.UnitY).Normalized();
 
-		this.Projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(this.Fov), size.X / size.Y, 1, short.MaxValue);
-		this.View = Matrix4.LookAt(this.Postion, this.Postion + this.Forward, Vector3.UnitY);
+		this.View = this.CreateView();
+		this.Projection = this.CreateProjection(size);
 	}
+
+	protected abstract Matrix4 CreateView();
+	protected abstract Matrix4 CreateProjection(Vector2 size);
 }
