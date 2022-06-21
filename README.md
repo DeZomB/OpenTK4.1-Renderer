@@ -9,7 +9,7 @@ This small renderer is based on the openGL/openTK tutorials, plus individual ref
 - Unity and UE is more than we need for our application.
 
 ## Current state:
-![Screenshot](image.png)
+![Screenshot](screenshot.png)
 
 - Runs on Apple M1
 - Runs on Windows
