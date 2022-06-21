@@ -20,6 +20,7 @@ public class DefaultShader : Shader
 		uniform mat4 uModel;
 
 		in vec3 aPosition;
+		in vec3 aNormal;
 		in vec2 aTexture;
 
 		out vec2 vTexture;
@@ -69,11 +70,15 @@ public class DefaultShader : Shader
 	public override void LayoutVertices()
 	{
 		var position = GL.GetAttribLocation(this.Program, "aPosition");
-		GL.VertexAttribPointer(position, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+		GL.VertexAttribPointer(position, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
 		GL.EnableVertexAttribArray(position);
+		
+		var normal = GL.GetAttribLocation(this.Program, "aNormal");
+		GL.VertexAttribPointer(normal, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
+		GL.EnableVertexAttribArray(normal);
 
 		var texture = GL.GetAttribLocation(this.Program, "aTexture");
-		GL.VertexAttribPointer(texture, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
+		GL.VertexAttribPointer(texture, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
 		GL.EnableVertexAttribArray(texture);
 	}
 
