@@ -36,6 +36,7 @@ public class Game : GameWindow
 			}
 		)
 	{
+		GL.Enable(EnableCap.DepthTest);
 		GL.ClearColor(0, 0.5f, 0.75f, 1);
 
 		var vertices = new Vertex[]
@@ -166,7 +167,7 @@ public class Game : GameWindow
 	protected override void OnRenderFrame(FrameEventArgs args)
 	{
 		GL.Viewport(0, 0, this.ClientSize.X, this.ClientSize.Y);
-		GL.Clear(ClearBufferMask.ColorBufferBit);
+		GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 		this.camera.Update(this.ClientSize);
 		this.shader.SetCamera(this.camera);
