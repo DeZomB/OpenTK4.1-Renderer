@@ -1,4 +1,4 @@
-namespace EiveoEngine.Cameras;
+namespace EiveoEngine.Graphics.Cameras;
 
 using OpenTK.Mathematics;
 

@@ -1,7 +1,8 @@
 namespace SimplestGame;
 
-using EiveoEngine.Cameras;
 using EiveoEngine.Graphics;
+using EiveoEngine.Graphics.Cameras;
+using EiveoEngine.Graphics.VertexLayouts;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
@@ -40,43 +41,43 @@ public class Game : GameWindow
 		GL.Enable(EnableCap.DepthTest);
 		GL.ClearColor(0, 0.5f, 0.75f, 1);
 
-		var vertices = new Vertex[]
+		var vertices = new VertexPositionNormalTexture[]
 		{
 			// Front
-			new(new Vector3(1, 1, 0), new Vector2(1, 1)),
-			new(new Vector3(1, 0, 0), new Vector2(1, 0)),
-			new(new Vector3(0, 0, 0), new Vector2(0, 0)),
-			new(new Vector3(0, 1, 0), new Vector2(0, 1)),
+			new(new Vector3(1, 1, 0), new Vector3(0, 0, 1), new Vector2(1, 1)),
+			new(new Vector3(1, 0, 0), new Vector3(0, 0, 1), new Vector2(1, 0)),
+			new(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector2(0, 0)),
+			new(new Vector3(0, 1, 0), new Vector3(0, 0, 1), new Vector2(0, 1)),
 
 			// Right
-			new(new Vector3(1, 1, -1), new Vector2(1, 1)),
-			new(new Vector3(1, 0, -1), new Vector2(1, 0)),
-			new(new Vector3(1, 0, 0), new Vector2(0, 0)),
-			new(new Vector3(1, 1, 0), new Vector2(0, 1)),
+			new(new Vector3(1, 1, -1), new Vector3(1, 0, 0), new Vector2(1, 1)),
+			new(new Vector3(1, 0, -1), new Vector3(1, 0, 0), new Vector2(1, 0)),
+			new(new Vector3(1, 0, 0), new Vector3(1, 0, 0), new Vector2(0, 0)),
+			new(new Vector3(1, 1, 0), new Vector3(1, 0, 0), new Vector2(0, 1)),
 
 			// Back
-			new(new Vector3(0, 1, -1), new Vector2(1, 1)),
-			new(new Vector3(0, 0, -1), new Vector2(1, 0)),
-			new(new Vector3(1, 0, -1), new Vector2(0, 0)),
-			new(new Vector3(1, 1, -1), new Vector2(0, 1)),
+			new(new Vector3(0, 1, -1), new Vector3(0, 0, -1), new Vector2(1, 1)),
+			new(new Vector3(0, 0, -1), new Vector3(0, 0, -1), new Vector2(1, 0)),
+			new(new Vector3(1, 0, -1), new Vector3(0, 0, -1), new Vector2(0, 0)),
+			new(new Vector3(1, 1, -1), new Vector3(0, 0, -1), new Vector2(0, 1)),
 
 			// Left
-			new(new Vector3(0, 1, 0), new Vector2(1, 1)),
-			new(new Vector3(0, 0, 0), new Vector2(1, 0)),
-			new(new Vector3(0, 0, -1), new Vector2(0, 0)),
-			new(new Vector3(0, 1, -1), new Vector2(0, 1)),
+			new(new Vector3(0, 1, 0), new Vector3(-1, 0, 0), new Vector2(1, 1)),
+			new(new Vector3(0, 0, 0), new Vector3(-1, 0, 0), new Vector2(1, 0)),
+			new(new Vector3(0, 0, -1), new Vector3(-1, 0, 0), new Vector2(0, 0)),
+			new(new Vector3(0, 1, -1), new Vector3(-1, 0, 0), new Vector2(0, 1)),
 
 			// Top
-			new(new Vector3(1, 1, -1), new Vector2(1, 1)),
-			new(new Vector3(1, 1, 0), new Vector2(1, 0)),
-			new(new Vector3(0, 1, 0), new Vector2(0, 0)),
-			new(new Vector3(0, 1, -1), new Vector2(0, 1)),
+			new(new Vector3(1, 1, -1), new Vector3(0, 1, 0), new Vector2(1, 1)),
+			new(new Vector3(1, 1, 0), new Vector3(0, 1, 0), new Vector2(1, 0)),
+			new(new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector2(0, 0)),
+			new(new Vector3(0, 1, -1), new Vector3(0, 1, 0), new Vector2(0, 1)),
 
 			// Bottom
-			new(new Vector3(1, 0, 0), new Vector2(1, 1)),
-			new(new Vector3(1, 0, -1), new Vector2(1, 0)),
-			new(new Vector3(0, 0, -1), new Vector2(0, 0)),
-			new(new Vector3(0, 0, 0), new Vector2(0, 1))
+			new(new Vector3(1, 0, 0), new Vector3(0, -1, 0), new Vector2(1, 1)),
+			new(new Vector3(1, 0, -1), new Vector3(0, -1, 0), new Vector2(1, 0)),
+			new(new Vector3(0, 0, -1), new Vector3(0, -1, 0), new Vector2(0, 0)),
+			new(new Vector3(0, 0, 0), new Vector3(0, -1, 0), new Vector2(0, 1))
 		};
 
 		var indices = new uint[] { 0, 1, 3, 1, 2, 3 };
