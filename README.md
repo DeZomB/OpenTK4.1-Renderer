@@ -14,5 +14,5 @@ This small renderer is based on the openGL/openTK tutorials, plus individual ref
 - Runs on Apple M1
 - Runs on Windows
 
-# What#s next:
-- Deferred Rendering
+# Goal:
+- "Simple" C# renderer with Deferred Rendering
