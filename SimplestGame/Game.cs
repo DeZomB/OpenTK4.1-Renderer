@@ -32,27 +32,56 @@ public class Game : GameWindow
 				// The maximum supported OpenGL feature set under MacOS
 				Profile = ContextProfile.Core,
 				APIVersion = new Version(4, 1),
-				Flags = ContextFlags.ForwardCompatible,
+				Flags = ContextFlags.ForwardCompatible
 			}
 		)
 	{
 		GL.ClearColor(0, 0.5f, 0.75f, 1);
 
-		// TODO implement vertex structs.
-		var vertices = new float[]
+		var vertices = new Vertex[]
 		{
-			// vec3 uPosition
-			// vec2 uTexture
-			1, 1, 0, 1, 1,
-			1, 0, 0, 1, 0,
-			0, 0, 0, 0, 0,
-			0, 1, 0, 0, 1
+			// Front
+			new(new Vector3(1, 1, 0), new Vector2(1, 1)),
+			new(new Vector3(1, 0, 0), new Vector2(1, 0)),
+			new(new Vector3(0, 0, 0), new Vector2(0, 0)),
+			new(new Vector3(0, 1, 0), new Vector2(0, 1)),
+
+			// Right
+			new(new Vector3(1, 1, -1), new Vector2(1, 1)),
+			new(new Vector3(1, 0, -1), new Vector2(1, 0)),
+			new(new Vector3(1, 0, 0), new Vector2(0, 0)),
+			new(new Vector3(1, 1, 0), new Vector2(0, 1)),
+
+			// Back
+			new(new Vector3(0, 1, -1), new Vector2(1, 1)),
+			new(new Vector3(0, 0, -1), new Vector2(1, 0)),
+			new(new Vector3(1, 0, -1), new Vector2(0, 0)),
+			new(new Vector3(1, 1, -1), new Vector2(0, 1)),
+
+			// Left
+			new(new Vector3(0, 1, 0), new Vector2(1, 1)),
+			new(new Vector3(0, 0, 0), new Vector2(1, 0)),
+			new(new Vector3(0, 0, -1), new Vector2(0, 0)),
+			new(new Vector3(0, 1, -1), new Vector2(0, 1)),
+
+			// Top
+			new(new Vector3(1, 1, -1), new Vector2(1, 1)),
+			new(new Vector3(1, 1, 0), new Vector2(1, 0)),
+			new(new Vector3(0, 1, 0), new Vector2(0, 0)),
+			new(new Vector3(0, 1, -1), new Vector2(0, 1)),
+
+			// Bottom
+			new(new Vector3(1, 0, 0), new Vector2(1, 1)),
+			new(new Vector3(1, 0, -1), new Vector2(1, 0)),
+			new(new Vector3(0, 0, -1), new Vector2(0, 0)),
+			new(new Vector3(0, 0, 0), new Vector2(0, 1))
 		};
 
 		var indices = new uint[] { 0, 1, 3, 1, 2, 3 };
+		indices = Enumerable.Range(0, vertices.Length / 4).SelectMany(i => indices.Select(index => (uint) (i * 4 + index))).ToArray();
 
 		var image = Image.Load<Rgba32>(File.OpenRead("Assets/test.png"));
-		image.Mutate(x => x.Flip(FlipMode.Vertical));
+		image.Mutate(context => context.Flip(FlipMode.Vertical));
 		var pixels = new byte[image.Width * image.Width * sizeof(Rgba32)];
 		image.CopyPixelDataTo(pixels);
 
@@ -61,7 +90,7 @@ public class Game : GameWindow
 		this.shader = new DefaultShader();
 		this.model = new Model(vertices, indices, this.shader);
 		this.texture = new Texture(pixels, image.Width, image.Height);
-		this.modelInstance = new ModelInstance(this.model, this.texture, this.shader) { Scale = new Vector3(50) };
+		this.modelInstance = new ModelInstance(this.model, this.texture, this.shader) { Scale = new Vector3(10) };
 
 		this.camera = new Camera { Postion = Vector3.UnitZ * 10 };
 	}
@@ -75,15 +104,18 @@ public class Game : GameWindow
 
 	protected override void OnUpdateFrame(FrameEventArgs args)
 	{
-		if (this.IsFocused && this.CursorState != CursorState.Grabbed)
+		if (this.IsFocused)
 		{
-			this.CursorState = CursorState.Grabbed;
-			this.skipMouseInput = true;
-		}
-		else if (!this.IsFocused && this.CursorState == CursorState.Grabbed)
-			this.CursorState = CursorState.Normal;
+			if (this.CursorState != CursorState.Grabbed)
+			{
+				this.CursorState = CursorState.Grabbed;
+				this.skipMouseInput = true;
+			}
 
-		this.ProcessMovement(args);
+			this.ProcessMovement(args);
+		}
+		else if (this.CursorState == CursorState.Grabbed)
+			this.CursorState = CursorState.Normal;
 	}
 
 	private void ProcessMovement(FrameEventArgs args)
@@ -117,7 +149,6 @@ public class Game : GameWindow
 
 		if (this.KeyboardState.IsKeyDown(Keys.LeftControl))
 			this.camera.Postion -= Vector3.UnitY * cameraSpeed * (float) args.Time;
-
 
 		if (this.skipMouseInput)
 			this.skipMouseInput = false;

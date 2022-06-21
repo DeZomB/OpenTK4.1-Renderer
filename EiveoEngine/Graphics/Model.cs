@@ -1,7 +1,6 @@
 namespace EiveoEngine.Graphics;
 
 using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
 
 public class Model : IDisposable
 {
@@ -11,7 +10,7 @@ public class Model : IDisposable
 
 	public readonly int Indices;
 
-	public Model(float[] vertices, uint[] indices, Shader shader)
+	public unsafe Model(Vertex[] vertices, uint[] indices, Shader shader)
 	{
 		this.Indices = indices.Length;
 
@@ -20,7 +19,7 @@ public class Model : IDisposable
 
 		this.vertexBuffer = GL.GenBuffer();
 		GL.BindBuffer(BufferTarget.ArrayBuffer, this.vertexBuffer);
-		GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
+		GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(Vertex), vertices, BufferUsageHint.StaticDraw);
 
 		this.indexBuffer = GL.GenBuffer();
 		GL.BindBuffer(BufferTarget.ElementArrayBuffer, this.indexBuffer);
