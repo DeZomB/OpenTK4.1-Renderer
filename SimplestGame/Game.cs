@@ -38,10 +38,10 @@ public class Game : GameWindow
             var vertices = new[]
             {
                 // Position         Texture coordinates
-                50f, 50f, 0.0f, 1.0f, 1.0f, // top right
-                50f, -50f, 0.0f, 1.0f, 0.0f, // bottom right
-                -50f, -50f, 0.0f, 0.0f, 0.0f, // bottom left
-                -50f, 50f, 0.0f, 0.0f, 1.0f // top left
+                5f, 5f, 0.0f, 1.0f, 1.0f, // top right
+                5f, -5f, 0.0f, 1.0f, 0.0f, // bottom right
+                -5f, -5f, 0.0f, 0.0f, 0.0f, // bottom left
+                -5f, 5f, 0.0f, 0.0f, 1.0f // top left
             };
 
 
