@@ -27,10 +27,9 @@ public abstract class Camera
 
 		this.Right = Vector3.Cross(this.Forward, Vector3.UnitY).Normalized();
 
-		this.View = this.CreateView();
+		this.View = Matrix4.LookAt(this.Postion, this.Postion + this.Forward, Vector3.UnitY);
 		this.Projection = this.CreateProjection(size);
 	}
 
-	protected abstract Matrix4 CreateView();
 	protected abstract Matrix4 CreateProjection(Vector2 size);
 }
