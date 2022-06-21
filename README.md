@@ -9,10 +9,10 @@ This small renderer is based on the openGL/openTK tutorials, plus individual ref
 - Unity and UE is more than we need for our application.
 
 ## Current state:
-*screenshot*
+![Screenshot](image.png)
 
 - Runs on Apple M1
 - Runs on Windows
 
-# What#s next:
-- Deferred Rendering
+# Goal:
+- "Simple" C# renderer with Deferred Rendering
