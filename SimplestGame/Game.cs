@@ -3,6 +3,7 @@ namespace SimplestGame;
 using EiveoEngine.Extensions;
 using EiveoEngine.Graphics;
 using EiveoEngine.Graphics.Cameras;
+using EiveoEngine.Graphics.Lights;
 using EiveoEngine.Graphics.Textures;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -16,8 +17,7 @@ public class Game : GameWindow
 {
 	private readonly DeferredRenderer deferredRenderer;
 	private readonly Camera camera;
-
-	private readonly List<ModelInstance> modelInstances = new();
+	private readonly Scene scene;
 	private readonly ModelInstance lightSource;
 
 	private bool skipMouseInput = true;
@@ -128,9 +128,11 @@ public class Game : GameWindow
 
 		var lightMaterial = new Material { EmissiveColor = Color.White };
 
+		this.scene = new Scene();
+
 		for (var i = 0; i < 10000; i++)
 		{
-			this.modelInstances.Add(
+			this.scene.ModelInstances.Add(
 				new ModelInstance(cubeModel, crateMaterial)
 				{
 					Position = new Vector3((int) (i / 100f), 0, i % 100) * 2, Rotation = new Vector3(1.0f, 0.3f, 0.5f) * (20f * i).ToRadians()
@@ -138,14 +140,20 @@ public class Game : GameWindow
 			);
 		}
 
-		this.modelInstances.Add(new ModelInstance(cubeModel, testMaterial) { Position = new Vector3(0, 2, 0) });
+		this.scene.ModelInstances.Add(new ModelInstance(cubeModel, testMaterial) { Position = new Vector3(0, 2, 0) });
 
 		for (var i = 0; i < 10; i++)
-			this.modelInstances.Add(new ModelInstance(planeModel, emissiveMaterial) { Position = new Vector3(2, 2, -i) });
+			this.scene.ModelInstances.Add(new ModelInstance(planeModel, emissiveMaterial) { Position = new Vector3(2, 2, -i) });
 
-		this.modelInstances.Add(
+		this.scene.ModelInstances.Add(
 			this.lightSource = new ModelInstance(cubeModel, lightMaterial) { Scale = new Vector3(0.2f), Position = new Vector3(1.2f, 1.0f, 2.0f) }
 		);
+
+		this.scene.AmbientLights.Add(new AmbientLight { Color = Color.FromArgb(15, 255, 255, 255) });
+
+		// TODO a directional sunlight
+		// TODO a bunch of point lights
+		// TODO the orbiting spot light which points to 0,0,0
 	}
 
 	protected override void OnUpdateFrame(FrameEventArgs args)
@@ -221,7 +229,7 @@ public class Game : GameWindow
 
 		this.camera.Update(this.ClientSize);
 
-		this.deferredRenderer.Draw(this.camera, this.modelInstances);
+		this.deferredRenderer.Draw(this.camera, this.scene);
 
 		this.SwapBuffers();
 	}

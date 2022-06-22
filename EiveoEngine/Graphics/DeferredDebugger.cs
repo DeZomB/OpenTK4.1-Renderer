@@ -127,7 +127,7 @@ public class DeferredDebugger : Shader
 		GL.UniformMatrix4(this.model, false, ref cubeMatrix);
 		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Cube.Id);
 		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
-		
+
 		GL.BindTexture(TextureTarget.Texture2D, 0);
 		GL.BindVertexArray(0);
 		GL.UseProgram(0);

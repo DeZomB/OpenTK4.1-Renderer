@@ -17,14 +17,14 @@ public class DeferredRenderer
 		this.shadowRenderer = new ShadowRenderer();
 	}
 
-	public void Draw(Camera camera, IEnumerable<ModelInstance> modelInstances)
+	public void Draw(Camera camera, Scene scene)
 	{
 		this.DeferredBuffer.Resize((int) camera.Size.X, (int) camera.Size.Y);
 		this.lightRenderer.Resize((int) camera.Size.X, (int) camera.Size.Y);
 		this.shadowRenderer.Resize((int) camera.Size.X, (int) camera.Size.Y);
-		
-		this.DeferredBuffer.Draw(camera, modelInstances);
-		this.lightRenderer.Draw(this.DeferredBuffer);
+
+		this.DeferredBuffer.Draw(camera, scene);
+		this.lightRenderer.Draw(this.DeferredBuffer, camera, scene);
 		this.shadowRenderer.Draw(this.DeferredBuffer);
 		this.deferredDebugger.Draw(this.DeferredBuffer, this.lightRenderer, this.shadowRenderer);
 	}

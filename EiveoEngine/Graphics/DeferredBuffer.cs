@@ -210,7 +210,7 @@ public class DeferredBuffer : Shader
 		GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, 0);
 	}
 
-	public void Draw(Camera camera, IEnumerable<ModelInstance> modelInstances)
+	public void Draw(Camera camera, Scene scene)
 	{
 		GL.BindFramebuffer(FramebufferTarget.Framebuffer, this.framebuffer);
 
@@ -224,7 +224,7 @@ public class DeferredBuffer : Shader
 		GL.UniformMatrix4(this.view, false, ref view);
 		GL.UniformMatrix4(this.projection, false, ref projection);
 
-		foreach (var modelInstance in modelInstances)
+		foreach (var modelInstance in scene.ModelInstances)
 		{
 			var matrix = modelInstance.Transform;
 
