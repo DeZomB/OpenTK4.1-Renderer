@@ -109,11 +109,13 @@ public class Game : GameWindow
 	{
 		if (this.IsFocused)
 		{
-			if (this.CursorState != CursorState.Grabbed)
+			if (this.CursorState != CursorState.Grabbed && this.MouseState.IsButtonDown(MouseButton.Button1))
 			{
 				this.CursorState = CursorState.Grabbed;
 				this.skipMouseInput = true;
 			}
+			else if (this.CursorState == CursorState.Grabbed && !this.MouseState.IsButtonDown(MouseButton.Button1))
+				this.CursorState = CursorState.Normal;
 
 			this.ProcessMovement(args);
 		}
@@ -153,7 +155,7 @@ public class Game : GameWindow
 		if (this.KeyboardState.IsKeyDown(Keys.LeftControl))
 			this.camera.Postion -= Vector3.UnitY * cameraSpeed * (float) args.Time;
 
-		if (this.skipMouseInput)
+		if (this.skipMouseInput || this.CursorState != CursorState.Grabbed)
 			this.skipMouseInput = false;
 		else
 		{
