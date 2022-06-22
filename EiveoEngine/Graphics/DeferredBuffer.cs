@@ -2,6 +2,7 @@ namespace EiveoEngine.Graphics;
 
 using Cameras;
 using OpenTK.Graphics.OpenGL4;
+using Textures;
 
 public class DeferredBuffer : Shader
 {
@@ -101,12 +102,12 @@ public class DeferredBuffer : Shader
 
 	private readonly int framebuffer;
 
-	public readonly int Position;
-	public readonly int Normal;
-	public readonly int Albedo;
-	public readonly int Specular;
-	public readonly int Emissive;
-	public readonly int Cube;
+	public readonly FrameBufferTexture Position;
+	public readonly FrameBufferTexture Normal;
+	public readonly FrameBufferTexture Albedo;
+	public readonly FrameBufferTexture Specular;
+	public readonly FrameBufferTexture Emissive;
+	public readonly FrameBufferTexture Cube;
 
 	private readonly int depth;
 
@@ -136,12 +137,12 @@ public class DeferredBuffer : Shader
 
 		GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, this.depth);
 
-		this.Position = DeferredBuffer.CreateAttachment(FramebufferAttachment.ColorAttachment0);
-		this.Normal = DeferredBuffer.CreateAttachment(FramebufferAttachment.ColorAttachment1);
-		this.Albedo = DeferredBuffer.CreateAttachment(FramebufferAttachment.ColorAttachment2);
-		this.Specular = DeferredBuffer.CreateAttachment(FramebufferAttachment.ColorAttachment3);
-		this.Emissive = DeferredBuffer.CreateAttachment(FramebufferAttachment.ColorAttachment4);
-		this.Cube = DeferredBuffer.CreateAttachment(FramebufferAttachment.ColorAttachment5);
+		this.Position = new FrameBufferTexture(FramebufferAttachment.ColorAttachment0);
+		this.Normal = new FrameBufferTexture(FramebufferAttachment.ColorAttachment1);
+		this.Albedo = new FrameBufferTexture(FramebufferAttachment.ColorAttachment2);
+		this.Specular = new FrameBufferTexture(FramebufferAttachment.ColorAttachment3);
+		this.Emissive = new FrameBufferTexture(FramebufferAttachment.ColorAttachment4);
+		this.Cube = new FrameBufferTexture(FramebufferAttachment.ColorAttachment5);
 
 		GL.DrawBuffers(
 			6,
@@ -171,22 +172,6 @@ public class DeferredBuffer : Shader
 		GL.UseProgram(0);
 	}
 
-	private static int CreateAttachment(FramebufferAttachment framebufferAttachment)
-	{
-		var id = GL.GenTexture();
-
-		GL.BindTexture(TextureTarget.Texture2D, id);
-
-		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int) TextureMinFilter.Nearest);
-		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int) TextureMagFilter.Nearest);
-
-		GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, framebufferAttachment, TextureTarget.Texture2D, id, 0);
-
-		GL.BindTexture(TextureTarget.Texture2D, 0);
-
-		return id;
-	}
-
 	public void LayoutAttributes()
 	{
 		GL.VertexAttribPointer(this.position, 3, VertexAttribPointerType.Float, false, 14 * sizeof(float), 0 * sizeof(float));
@@ -213,23 +198,16 @@ public class DeferredBuffer : Shader
 		this.width = width;
 		this.height = height;
 
-		DeferredBuffer.Resize(this.Position, PixelInternalFormat.Rgba32f, width, height);
-		DeferredBuffer.Resize(this.Normal, PixelInternalFormat.Rgba32f, width, height);
-		DeferredBuffer.Resize(this.Albedo, PixelInternalFormat.Rgba, width, height);
-		DeferredBuffer.Resize(this.Specular, PixelInternalFormat.Rgba, width, height);
-		DeferredBuffer.Resize(this.Emissive, PixelInternalFormat.Rgba, width, height);
-		DeferredBuffer.Resize(this.Cube, PixelInternalFormat.Rgba, width, height);
+		this.Position.Resize(PixelInternalFormat.Rgba32f, width, height);
+		this.Normal.Resize(PixelInternalFormat.Rgba32f, width, height);
+		this.Albedo.Resize(PixelInternalFormat.Rgba, width, height);
+		this.Specular.Resize(PixelInternalFormat.Rgba, width, height);
+		this.Emissive.Resize(PixelInternalFormat.Rgba, width, height);
+		this.Cube.Resize(PixelInternalFormat.Rgba, width, height);
 
 		GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, this.depth);
 		GL.RenderbufferStorage(RenderbufferTarget.Renderbuffer, RenderbufferStorage.DepthComponent, width, height);
 		GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, 0);
-	}
-
-	private static void Resize(int texture, PixelInternalFormat internalFormat, int width, int height)
-	{
-		GL.BindTexture(TextureTarget.Texture2D, texture);
-		GL.TexImage2D(TextureTarget.Texture2D, 0, internalFormat, width, height, 0, PixelFormat.Rgba, PixelType.Float, IntPtr.Zero);
-		GL.BindTexture(TextureTarget.Texture2D, 0);
 	}
 
 	public void Draw(Camera camera, IEnumerable<ModelInstance> modelInstances)
@@ -297,12 +275,12 @@ public class DeferredBuffer : Shader
 
 	public override void Dispose()
 	{
-		GL.DeleteTexture(this.Cube);
-		GL.DeleteTexture(this.Emissive);
-		GL.DeleteTexture(this.Specular);
-		GL.DeleteTexture(this.Albedo);
-		GL.DeleteTexture(this.Normal);
-		GL.DeleteTexture(this.Position);
+		this.Cube.Dispose();
+		this.Emissive.Dispose();
+		this.Specular.Dispose();
+		this.Albedo.Dispose();
+		this.Normal.Dispose();
+		this.Position.Dispose();
 
 		GL.DeleteRenderbuffer(this.depth);
 		GL.DeleteFramebuffer(this.framebuffer);

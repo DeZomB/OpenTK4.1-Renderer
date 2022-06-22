@@ -90,33 +90,33 @@ public class DeferredDebugger : Shader
 
 		var positionMatrix = Matrix4.CreateScale(0.5f) * Matrix4.CreateTranslation(-1.0f, 0.0f, 0);
 		GL.UniformMatrix4(this.model, false, ref positionMatrix);
-		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Position);
-		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, Array.Empty<uint>());
+		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Position.Id);
+		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
 
 		var normalMatrix = Matrix4.CreateScale(0.5f) * Matrix4.CreateTranslation(-0.5f, 0.0f, 0);
 		GL.UniformMatrix4(this.model, false, ref normalMatrix);
-		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Normal);
-		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, Array.Empty<uint>());
+		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Normal.Id);
+		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
 
 		var albedoMatrix = Matrix4.CreateScale(0.5f) * Matrix4.CreateTranslation(-1.0f, -0.5f, 0);
 		GL.UniformMatrix4(this.model, false, ref albedoMatrix);
-		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Albedo);
-		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, Array.Empty<uint>());
+		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Albedo.Id);
+		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
 
 		var specularMatrix = Matrix4.CreateScale(0.5f) * Matrix4.CreateTranslation(-0.5f, -0.5f, 0);
 		GL.UniformMatrix4(this.model, false, ref specularMatrix);
-		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Specular);
-		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, Array.Empty<uint>());
+		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Specular.Id);
+		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
 
 		var emissiveMatrix = Matrix4.CreateScale(0.5f) * Matrix4.CreateTranslation(0.0f, -0.5f, 0);
 		GL.UniformMatrix4(this.model, false, ref emissiveMatrix);
-		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Emissive);
-		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, Array.Empty<uint>());
+		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Emissive.Id);
+		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
 
 		var cubeMatrix = Matrix4.CreateScale(0.5f) * Matrix4.CreateTranslation(0.5f, -0.5f, 0);
 		GL.UniformMatrix4(this.model, false, ref cubeMatrix);
-		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Cube);
-		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, Array.Empty<uint>());
+		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Cube.Id);
+		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
 		
 		GL.BindTexture(TextureTarget.Texture2D, 0);
 		GL.BindVertexArray(0);
