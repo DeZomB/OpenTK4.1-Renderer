@@ -75,7 +75,7 @@ public class DeferredDebugger : Shader
 		GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 	}
 
-	public void Draw(DeferredBuffer deferredBuffer)
+	public void Draw(DeferredBuffer deferredBuffer, LightRenderer lightRenderer, ShadowRenderer shadowRenderer)
 	{
 		GL.UseProgram(this.Program);
 
@@ -96,6 +96,16 @@ public class DeferredDebugger : Shader
 		var normalMatrix = Matrix4.CreateScale(0.5f) * Matrix4.CreateTranslation(-0.5f, 0.0f, 0);
 		GL.UniformMatrix4(this.model, false, ref normalMatrix);
 		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Normal.Id);
+		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+
+		var lightMatrix = Matrix4.CreateScale(0.5f) * Matrix4.CreateTranslation(0.0f, 0.0f, 0);
+		GL.UniformMatrix4(this.model, false, ref lightMatrix);
+		GL.BindTexture(TextureTarget.Texture2D, lightRenderer.Output.Id);
+		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
+
+		var shadowMatrix = Matrix4.CreateScale(0.5f) * Matrix4.CreateTranslation(0.5f, 0.0f, 0);
+		GL.UniformMatrix4(this.model, false, ref shadowMatrix);
+		GL.BindTexture(TextureTarget.Texture2D, shadowRenderer.Output.Id);
 		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
 
 		var albedoMatrix = Matrix4.CreateScale(0.5f) * Matrix4.CreateTranslation(-1.0f, -0.5f, 0);
