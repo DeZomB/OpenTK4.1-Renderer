@@ -1,5 +1,6 @@
 namespace EiveoEngine.Graphics.Cameras;
 
+using Extensions;
 using OpenTK.Mathematics;
 
 public abstract class Camera
@@ -16,13 +17,17 @@ public abstract class Camera
 	public Matrix4 View { get; private set; }
 	public Matrix4 Projection { get; private set; }
 
+	public Vector2 Size { get; private set; }
+
 	public void Update(Vector2 size)
 	{
+		this.Size = size;
+
 		this.Forward = new Vector3
 		{
-			X = (float) (Math.Cos(MathHelper.DegreesToRadians(this.Yaw)) * Math.Cos(MathHelper.DegreesToRadians(this.Pitch))),
-			Y = (float) Math.Sin(MathHelper.DegreesToRadians(this.Pitch)),
-			Z = (float) (Math.Sin(MathHelper.DegreesToRadians(this.Yaw)) * Math.Cos(MathHelper.DegreesToRadians(this.Pitch)))
+			X = (float) (Math.Cos(this.Yaw.ToRadians()) * Math.Cos(this.Pitch.ToRadians())),
+			Y = (float) Math.Sin(this.Pitch.ToRadians()),
+			Z = (float) (Math.Sin(this.Yaw.ToRadians()) * Math.Cos(this.Pitch.ToRadians()))
 		}.Normalized();
 
 		this.Right = Vector3.Cross(this.Forward, Vector3.UnitY).Normalized();
