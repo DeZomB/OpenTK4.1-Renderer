@@ -1,108 +1,151 @@
 namespace SimplestGame;
 
+using EiveoEngine.Extensions;
 using EiveoEngine.Graphics;
 using EiveoEngine.Graphics.Cameras;
-using EiveoEngine.Graphics.VertexLayouts;
+using EiveoEngine.Graphics.Textures;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using Image = SixLabors.ImageSharp.Image;
+using System.Diagnostics;
+using System.Drawing;
 
 public class Game : GameWindow
 {
-	private readonly DefaultShader shader;
-	private readonly Model model;
-	private readonly Texture texture;
-	private readonly ModelInstance modelInstance;
-
+	private readonly DeferredRenderer deferredRenderer;
 	private readonly Camera camera;
+
+	private readonly List<ModelInstance> modelInstances = new();
+	private readonly ModelInstance lightSource;
 
 	private bool skipMouseInput = true;
 
-	public unsafe Game()
+	public Game()
 		: base(
 			GameWindowSettings.Default,
-			new NativeWindowSettings
-			{
-				Size = new Vector2i(800, 600),
-				Title = "EiveoEngine",
 
-				// The maximum supported OpenGL feature set under MacOS
-				Profile = ContextProfile.Core,
-				APIVersion = new Version(4, 1),
-				Flags = ContextFlags.ForwardCompatible
-			}
+			// The maximum supported OpenGL feature set under MacOS
+			new NativeWindowSettings { Flags = ContextFlags.ForwardCompatible, Profile = ContextProfile.Core, APIVersion = new(4, 1) }
 		)
 	{
 		GL.Enable(EnableCap.DepthTest);
-		GL.ClearColor(0, 0.5f, 0.75f, 1);
+		GL.ClearColor(0, 0, 0, 1);
 
-		var vertices = new VertexPositionNormalTexture[]
+		this.deferredRenderer = new DeferredRenderer();
+		this.camera = new PerspectiveCamera();
+
+		var cubeModel = new Model(
+			this.deferredRenderer.DeferredBuffer,
+			new Vertex[]
+			{
+				new(new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0, 0, -1), new Vector2(0.0f, 0.0f)),
+				new(new Vector3(0.5f, 0.5f, -0.5f), new Vector3(0, 0, -1), new Vector2(1.0f, 1.0f)),
+				new(new Vector3(0.5f, -0.5f, -0.5f), new Vector3(0, 0, -1), new Vector2(1.0f, 0.0f)),
+				new(new Vector3(0.5f, 0.5f, -0.5f), new Vector3(0, 0, -1), new Vector2(1.0f, 1.0f)),
+				new(new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0, 0, -1), new Vector2(0.0f, 0.0f)),
+				new(new Vector3(-0.5f, 0.5f, -0.5f), new Vector3(0, 0, -1), new Vector2(0.0f, 1.0f)),
+				new(new Vector3(-0.5f, -0.5f, 0.5f), new Vector3(0, 0, 1), new Vector2(0.0f, 0.0f)),
+				new(new Vector3(0.5f, -0.5f, 0.5f), new Vector3(0, 0, 1), new Vector2(1.0f, 0.0f)),
+				new(new Vector3(0.5f, 0.5f, 0.5f), new Vector3(0, 0, 1), new Vector2(1.0f, 1.0f)),
+				new(new Vector3(0.5f, 0.5f, 0.5f), new Vector3(0, 0, 1), new Vector2(1.0f, 1.0f)),
+				new(new Vector3(-0.5f, 0.5f, 0.5f), new Vector3(0, 0, 1), new Vector2(0.0f, 1.0f)),
+				new(new Vector3(-0.5f, -0.5f, 0.5f), new Vector3(0, 0, 1), new Vector2(0.0f, 0.0f)),
+				new(new Vector3(-0.5f, 0.5f, 0.5f), new Vector3(-1, 0, 0), new Vector2(1.0f, 0.0f)),
+				new(new Vector3(-0.5f, 0.5f, -0.5f), new Vector3(-1, 0, 0), new Vector2(1.0f, 1.0f)),
+				new(new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(-1, 0, 0), new Vector2(0.0f, 1.0f)),
+				new(new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(-1, 0, 0), new Vector2(0.0f, 1.0f)),
+				new(new Vector3(-0.5f, -0.5f, 0.5f), new Vector3(-1, 0, 0), new Vector2(0.0f, 0.0f)),
+				new(new Vector3(-0.5f, 0.5f, 0.5f), new Vector3(-1, 0, 0), new Vector2(1.0f, 0.0f)),
+				new(new Vector3(0.5f, 0.5f, 0.5f), new Vector3(1, 0, 0), new Vector2(1.0f, 0.0f)),
+				new(new Vector3(0.5f, -0.5f, -0.5f), new Vector3(1, 0, 0), new Vector2(0.0f, 1.0f)),
+				new(new Vector3(0.5f, 0.5f, -0.5f), new Vector3(1, 0, 0), new Vector2(1.0f, 1.0f)),
+				new(new Vector3(0.5f, -0.5f, -0.5f), new Vector3(1, 0, 0), new Vector2(0.0f, 1.0f)),
+				new(new Vector3(0.5f, 0.5f, 0.5f), new Vector3(1, 0, 0), new Vector2(1.0f, 0.0f)),
+				new(new Vector3(0.5f, -0.5f, 0.5f), new Vector3(1, 0, 0), new Vector2(0.0f, 0.0f)),
+				new(new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0, -1, 0), new Vector2(0.0f, 1.0f)),
+				new(new Vector3(0.5f, -0.5f, -0.5f), new Vector3(0, -1, 0), new Vector2(1.0f, 1.0f)),
+				new(new Vector3(0.5f, -0.5f, 0.5f), new Vector3(0, -1, 0), new Vector2(1.0f, 0.0f)),
+				new(new Vector3(0.5f, -0.5f, 0.5f), new Vector3(0, -1, 0), new Vector2(1.0f, 0.0f)),
+				new(new Vector3(-0.5f, -0.5f, 0.5f), new Vector3(0, -1, 0), new Vector2(0.0f, 0.0f)),
+				new(new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0, -1, 0), new Vector2(0.0f, 1.0f)),
+				new(new Vector3(-0.5f, 0.5f, -0.5f), new Vector3(0, 1, 0), new Vector2(0.0f, 1.0f)),
+				new(new Vector3(0.5f, 0.5f, 0.5f), new Vector3(0, 1, 0), new Vector2(1.0f, 0.0f)),
+				new(new Vector3(0.5f, 0.5f, -0.5f), new Vector3(0, 1, 0), new Vector2(1.0f, 1.0f)),
+				new(new Vector3(0.5f, 0.5f, 0.5f), new Vector3(0, 1, 0), new Vector2(1.0f, 0.0f)),
+				new(new Vector3(-0.5f, 0.5f, -0.5f), new Vector3(0, 1, 0), new Vector2(0.0f, 1.0f)),
+				new(new Vector3(-0.5f, 0.5f, 0.5f), new Vector3(0, 1, 0), new Vector2(0.0f, 0.0f))
+			},
+			new Index[]
+			{
+				new(0, 1, 2),
+				new(3, 4, 5),
+				new(6, 7, 8),
+				new(9, 10, 11),
+				new(12, 13, 14),
+				new(15, 16, 17),
+				new(18, 19, 20),
+				new(21, 22, 23),
+				new(24, 25, 26),
+				new(27, 28, 29),
+				new(30, 31, 32),
+				new(33, 34, 35)
+			}
+		);
+
+		var planeModel = new Model(
+			this.deferredRenderer.DeferredBuffer,
+			new Vertex[]
+			{
+				new(new Vector3(-0.5f, -0.5f, 0), new Vector3(0, 0, 1), new Vector2(0.0f, 0.0f)),
+				new(new Vector3(0.5f, 0.5f, 0), new Vector3(0, 0, 1), new Vector2(1.0f, 1.0f)),
+				new(new Vector3(0.5f, -0.5f, 0), new Vector3(0, 0, 1), new Vector2(1.0f, 0.0f)),
+				new(new Vector3(0.5f, 0.5f, 0), new Vector3(0, 0, 1), new Vector2(1.0f, 1.0f)),
+				new(new Vector3(-0.5f, -0.5f, 0), new Vector3(0, 0, 1), new Vector2(0.0f, 0.0f)),
+				new(new Vector3(-0.5f, 0.5f, 0), new Vector3(0, 0, 1), new Vector2(0.0f, 1.0f))
+			},
+			new Index[] { new(0, 1, 2), new(3, 4, 5), new(0, 2, 1), new(3, 5, 4) }
+		);
+
+		var crateMaterial = new Material
 		{
-			// Front
-			new(new Vector3(1, 1, 0), new Vector3(0, 0, 1), new Vector2(1, 1)),
-			new(new Vector3(1, 0, 0), new Vector3(0, 0, 1), new Vector2(1, 0)),
-			new(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector2(0, 0)),
-			new(new Vector3(0, 1, 0), new Vector3(0, 0, 1), new Vector2(0, 1)),
-
-			// Right
-			new(new Vector3(1, 1, -1), new Vector3(1, 0, 0), new Vector2(1, 1)),
-			new(new Vector3(1, 0, -1), new Vector3(1, 0, 0), new Vector2(1, 0)),
-			new(new Vector3(1, 0, 0), new Vector3(1, 0, 0), new Vector2(0, 0)),
-			new(new Vector3(1, 1, 0), new Vector3(1, 0, 0), new Vector2(0, 1)),
-
-			// Back
-			new(new Vector3(0, 1, -1), new Vector3(0, 0, -1), new Vector2(1, 1)),
-			new(new Vector3(0, 0, -1), new Vector3(0, 0, -1), new Vector2(1, 0)),
-			new(new Vector3(1, 0, -1), new Vector3(0, 0, -1), new Vector2(0, 0)),
-			new(new Vector3(1, 1, -1), new Vector3(0, 0, -1), new Vector2(0, 1)),
-
-			// Left
-			new(new Vector3(0, 1, 0), new Vector3(-1, 0, 0), new Vector2(1, 1)),
-			new(new Vector3(0, 0, 0), new Vector3(-1, 0, 0), new Vector2(1, 0)),
-			new(new Vector3(0, 0, -1), new Vector3(-1, 0, 0), new Vector2(0, 0)),
-			new(new Vector3(0, 1, -1), new Vector3(-1, 0, 0), new Vector2(0, 1)),
-
-			// Top
-			new(new Vector3(1, 1, -1), new Vector3(0, 1, 0), new Vector2(1, 1)),
-			new(new Vector3(1, 1, 0), new Vector3(0, 1, 0), new Vector2(1, 0)),
-			new(new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector2(0, 0)),
-			new(new Vector3(0, 1, -1), new Vector3(0, 1, 0), new Vector2(0, 1)),
-
-			// Bottom
-			new(new Vector3(1, 0, 0), new Vector3(0, -1, 0), new Vector2(1, 1)),
-			new(new Vector3(1, 0, -1), new Vector3(0, -1, 0), new Vector2(1, 0)),
-			new(new Vector3(0, 0, -1), new Vector3(0, -1, 0), new Vector2(0, 0)),
-			new(new Vector3(0, 0, 0), new Vector3(0, -1, 0), new Vector2(0, 1))
+			AlbedoMap = new SimpleTexture("Assets/crate_d"),
+			NormalMap = new SimpleTexture("Assets/crate_n"),
+			SpecularMap = new SimpleTexture("Assets/crate_s")
 		};
 
-		var indices = new uint[] { 0, 1, 3, 1, 2, 3 };
-		indices = Enumerable.Range(0, vertices.Length / 4).SelectMany(i => indices.Select(index => (uint) (i * 4 + index))).ToArray();
+		var testMaterial = new Material
+		{
+			AlbedoMap = new SimpleTexture("Assets/crate_border_d"),
+			NormalMap = new SimpleTexture("Assets/crate_border_n"),
+			SpecularMap = new SimpleTexture("Assets/crate_border_s"),
+			CubeMap = new CubeTexture("Assets/cloudy"),
+			EmissiveMap = new SimpleTexture("Assets/spectrum_border")
+		};
 
-		var image = Image.Load<Rgba32>(File.OpenRead("Assets/test.png"));
-		image.Mutate(context => context.Flip(FlipMode.Vertical));
-		var pixels = new byte[image.Width * image.Width * sizeof(Rgba32)];
-		image.CopyPixelDataTo(pixels);
+		var emissiveMaterial = new Material { EmissiveMap = new SimpleTexture("Assets/spectrum") };
 
-		// TODO a model should be creatable without a shader.
-		// TODO The shader assignment should be part of either the instance or be a parameter on rendering!
-		this.shader = new DefaultShader();
-		this.model = new Model(vertices, indices, this.shader);
-		this.texture = new Texture(pixels, image.Width, image.Height);
-		this.modelInstance = new ModelInstance(this.model, this.texture, this.shader) { Scale = new Vector3(10) };
+		var lightMaterial = new Material { EmissiveColor = Color.White };
 
-		this.camera = new PerspectiveCamera { Postion = Vector3.UnitZ * 10 };
-	}
+		for (var i = 0; i < 10000; i++)
+		{
+			this.modelInstances.Add(
+				new ModelInstance(cubeModel, crateMaterial)
+				{
+					Position = new Vector3((int) (i / 100f), 0, i % 100) * 2, Rotation = new Vector3(1.0f, 0.3f, 0.5f) * (20f * i).ToRadians()
+				}
+			);
+		}
 
-	protected override void OnUnload()
-	{
-		this.shader.Dispose();
-		this.model.Dispose();
-		this.texture.Dispose();
+		this.modelInstances.Add(new ModelInstance(cubeModel, testMaterial) { Position = new Vector3(0, 2, 0) });
+
+		for (var i = 0; i < 10; i++)
+			this.modelInstances.Add(new ModelInstance(planeModel, emissiveMaterial) { Position = new Vector3(2, 2, -i) });
+
+		this.modelInstances.Add(
+			this.lightSource = new ModelInstance(cubeModel, lightMaterial) { Scale = new Vector3(0.2f), Position = new Vector3(1.2f, 1.0f, 2.0f) }
+		);
 	}
 
 	protected override void OnUpdateFrame(FrameEventArgs args)
@@ -121,6 +164,8 @@ public class Game : GameWindow
 		}
 		else if (this.CursorState == CursorState.Grabbed)
 			this.CursorState = CursorState.Normal;
+
+		this.lightSource.Position = Vector3.Transform(this.lightSource.Position, Quaternion.FromEulerAngles((float) args.Time, 0, 0));
 	}
 
 	private void ProcessMovement(FrameEventArgs args)
@@ -175,9 +220,8 @@ public class Game : GameWindow
 		GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 		this.camera.Update(this.ClientSize);
-		this.shader.SetCamera(this.camera);
 
-		this.modelInstance.Render();
+		this.deferredRenderer.Draw(this.camera, this.modelInstances);
 
 		this.SwapBuffers();
 	}

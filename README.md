@@ -13,6 +13,7 @@ This small renderer is based on the openGL/openTK tutorials, plus individual ref
 
 - Runs on Apple M1
 - Runs on Windows
+- Runs on Linux / Steam Deck
 
 # Goal:
 - "Simple" C# renderer with Deferred Rendering

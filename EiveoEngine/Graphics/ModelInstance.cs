@@ -1,37 +1,60 @@
 namespace EiveoEngine.Graphics;
 
-using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
 public class ModelInstance
 {
-	private readonly Model model;
-	private readonly Texture texture;
-	private readonly DefaultShader shader;
+	public readonly Model Model;
+	public readonly Material Material;
 
-	public Vector3 Position;
-	public Vector3 Scale = Vector3.One;
-	public Quaternion Rotation = Quaternion.Identity;
+	private Vector3 position = Vector3.Zero;
 
-	public ModelInstance(Model model, Texture texture, DefaultShader shader)
+	public Vector3 Position
 	{
-		this.model = model;
-		this.texture = texture;
-		this.shader = shader;
+		get => this.position;
+		set
+		{
+			this.position = value;
+			this.UpdateTransform();
+		}
 	}
 
-	public void Render()
+	private Vector3 rotation = Vector3.Zero;
+
+	public Vector3 Rotation
 	{
-		this.shader.Bind();
-		this.model.Bind();
-		this.texture.Bind();
+		get => this.position;
+		set
+		{
+			this.rotation = value;
+			this.UpdateTransform();
+		}
+	}
 
-		this.shader.SetUniforms(Matrix4.CreateTranslation(this.Position) * Matrix4.CreateFromQuaternion(this.Rotation) * Matrix4.CreateScale(this.Scale));
+	private Vector3 scale = Vector3.One;
 
-		GL.DrawElements(PrimitiveType.Triangles, this.model.Indices, DrawElementsType.UnsignedInt, 0);
+	public Vector3 Scale
+	{
+		get => this.position;
+		set
+		{
+			this.scale = value;
+			this.UpdateTransform();
+		}
+	}
 
-		this.texture.Unbind();
-		this.model.Unbind();
-		this.shader.Unbind();
+	public Matrix4 Transform { get; private set; }
+
+	public ModelInstance(Model model, Material material)
+	{
+		this.Model = model;
+		this.Material = material;
+	}
+
+	private void UpdateTransform()
+	{
+		this.Transform = Matrix4.CreateScale(this.scale) *
+			Matrix4.CreateFromQuaternion(Quaternion.FromEulerAngles(this.rotation.X, this.rotation.Y, this.rotation.Z)) *
+			Matrix4.CreateTranslation(this.position);
 	}
 }
