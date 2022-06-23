@@ -18,7 +18,9 @@ public class Game : GameWindow
 	private readonly DeferredRenderer deferredRenderer;
 	private readonly Camera camera;
 	private readonly Scene scene;
+
 	private readonly ModelInstance lightSource;
+	private readonly PointLight pointLight;
 
 	private bool skipMouseInput = true;
 
@@ -149,11 +151,10 @@ public class Game : GameWindow
 			this.lightSource = new ModelInstance(cubeModel, lightMaterial) { Scale = new Vector3(0.2f), Position = new Vector3(1.2f, 1.0f, 2.0f) }
 		);
 
-		this.scene.AmbientLights.Add(new AmbientLight { Color = Color.FromArgb(15, 255, 255, 255) });
-
-		// TODO a directional sunlight
-		// TODO a bunch of point lights
-		// TODO the orbiting spot light which points to 0,0,0
+		this.scene.Lights.Add(new AmbientLight { Color = Color.FromArgb(15, 255, 255, 255) });
+		this.scene.Lights.Add(new DirectionalLight { Color = Color.FromArgb(127, 255, 255, 255), Direction = -Vector3.UnitY });
+		this.scene.Lights.Add(this.pointLight = new PointLight { Color = Color.FromArgb(255, 255, 0, 0) });
+		this.scene.Lights.Add(new SpotLight { Color = Color.FromArgb(255, 0, 255, 0), Position = new Vector3(0, -5, 0), Direction = Vector3.UnitY });
 	}
 
 	protected override void OnUpdateFrame(FrameEventArgs args)
@@ -174,6 +175,7 @@ public class Game : GameWindow
 			this.CursorState = CursorState.Normal;
 
 		this.lightSource.Position = Vector3.Transform(this.lightSource.Position, Quaternion.FromEulerAngles((float) args.Time, 0, 0));
+		this.pointLight.Position = this.lightSource.Position;
 	}
 
 	private void ProcessMovement(FrameEventArgs args)
