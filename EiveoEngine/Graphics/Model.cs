@@ -2,6 +2,7 @@ namespace EiveoEngine.Graphics;
 
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using Renderer;
 
 public class Model : IDisposable
 {

@@ -1,4 +1,4 @@
-namespace EiveoEngine.Graphics;
+namespace EiveoEngine.Graphics.Renderer;
 
 using Cameras;
 using OpenTK.Graphics.OpenGL4;
@@ -27,38 +27,38 @@ public class LightRenderer : Shader
 		#version 410 core
 
 		struct AmbientLight {
-            vec4 Color;
-        };
+			vec4 Color;
+		};
 
 		struct DirectionalLight {
-            vec4 Color;
+			vec4 Color;
 
-            vec4 Direction;
-        };
+			vec4 Direction;
+		};
 
 		struct PointLight {
-            vec4 Color;
+			vec4 Color;
 
-            vec4 Position;
+			vec4 Position;
 
-            float Constant;
-            float Linear;
-            float Quadratic;
-        };
+			float Constant;
+			float Linear;
+			float Quadratic;
+		};
 
 		struct SpotLight {
-            vec4 Color;
+			vec4 Color;
 
-            vec4 Position;
-            vec4 Direction;
+			vec4 Position;
+			vec4 Direction;
 
-            float Constant;
-            float Linear;
-            float Quadratic;
+			float Constant;
+			float Linear;
+			float Quadratic;
 
-            float CutOffInner;
-            float CutOffOuter;
-        };
+			float CutOffInner;
+			float CutOffOuter;
+		};
 
 		layout(packed) uniform uLights
 		{
@@ -271,7 +271,7 @@ public class LightRenderer : Shader
 		writer.Write(0.0f);
 		writer.Write(0.0f);
 		writer.Write(0.0f);
-		
+
 		writer.Write(camera.Forward.X);
 		writer.Write(camera.Forward.Y);
 		writer.Write(camera.Forward.Z);
@@ -303,10 +303,10 @@ public class LightRenderer : Shader
 		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Specular.Id);
 
 		GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
-		
+
 		GL.ActiveTexture(TextureUnit.Texture2);
 		GL.BindTexture(TextureTarget.Texture2D, 0);
-		
+
 		GL.ActiveTexture(TextureUnit.Texture1);
 		GL.BindTexture(TextureTarget.Texture2D, 0);
 

@@ -1,4 +1,4 @@
-namespace EiveoEngine.Graphics;
+namespace EiveoEngine.Graphics.Renderer;
 
 using Cameras;
 

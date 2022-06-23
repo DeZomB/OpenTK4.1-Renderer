@@ -4,13 +4,13 @@ using EiveoEngine.Extensions;
 using EiveoEngine.Graphics;
 using EiveoEngine.Graphics.Cameras;
 using EiveoEngine.Graphics.Lights;
+using EiveoEngine.Graphics.Renderer;
 using EiveoEngine.Graphics.Textures;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using System.Diagnostics;
 using System.Drawing;
 
 public class Game : GameWindow
