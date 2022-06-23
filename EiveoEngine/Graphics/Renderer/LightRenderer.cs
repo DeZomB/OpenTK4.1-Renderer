@@ -104,7 +104,7 @@ public class LightRenderer : Shader
 			for (int i = 0; i < uDirectionalLightsCount; i++)
 			{
 				vec3 lightColor = uDirectionalLights[i].Color.xyz * uDirectionalLights[i].Color.w;
-				vec3 lightDirection = normalize(-uDirectionalLights[i].Direction.xyz);
+				vec3 lightDirection = -uDirectionalLights[i].Direction.xyz;
 				vec3 reflectDirection = reflect(-lightDirection, normalMap);
 
 				diffuseLight += max(dot(normalMap, lightDirection), 0.0) * lightColor;
@@ -123,24 +123,19 @@ public class LightRenderer : Shader
 				specularLight += specularMap.xyz * pow(max(dot(vViewDirection.xyz, reflectDirection), 0.0), shininess) * lightColor * attenuation;
 			}
 
-			// TODO spot lights do not work yet!
 			for (int i = 0; i < uSpotLightsCount; i++)
 			{
 				vec3 lightDirection = normalize(uSpotLights[i].Position.xyz - position);
-				float theta = dot(lightDirection, normalize(-uSpotLights[i].Direction.xyz));
+				float theta = dot(lightDirection, -uSpotLights[i].Direction.xyz);
+				vec3 lightColor = uSpotLights[i].Color.xyz * uSpotLights[i].Color.w;
+				float distance = length(uSpotLights[i].Position.xyz - position);
+				float epsilon = uSpotLights[i].CutOffInner - uSpotLights[i].CutOffOuter;
+				float intensity = clamp((theta - uSpotLights[i].CutOffOuter) / epsilon, 0.0, 1.0);
+				vec3 reflectDirection = reflect(-lightDirection, normalMap);
+				float attenuation = 1.0 / (uSpotLights[i].Constant + uSpotLights[i].Linear * distance + uSpotLights[i].Quadratic * (distance * distance));
 
-				if (theta > uSpotLights[i].CutOffOuter)
-				{
-					vec3 lightColor = uSpotLights[i].Color.xyz * uSpotLights[i].Color.w;
-					float distance = length(uSpotLights[i].Position.xyz - position);
-					float epsilon = uSpotLights[i].CutOffInner - uSpotLights[i].CutOffOuter;
-					float intensity = clamp((theta - uSpotLights[i].CutOffOuter) / epsilon, 0.0, 1.0);
-					vec3 reflectDirection = reflect(-lightDirection, normalMap);
-					float attenuation = 1.0 / (uSpotLights[i].Constant + uSpotLights[i].Linear * distance + uSpotLights[i].Quadratic * (distance * distance));
-
-					diffuseLight += max(dot(normalMap, lightDirection), 0.0) * lightColor * attenuation * intensity;
-					specularLight += specularMap.xyz * pow(max(dot(vViewDirection.xyz, reflectDirection), 0.0), shininess) * lightColor * attenuation * intensity;
-				}
+				diffuseLight += max(dot(normalMap, lightDirection), 0.0) * lightColor * attenuation * intensity;
+				specularLight += specularMap.xyz * pow(max(dot(vViewDirection.xyz, reflectDirection), 0.0), shininess) * lightColor * attenuation * intensity;
 			}
 
 			fColor = vec4(ambientLight + diffuseLight + specularLight, 1.0);
