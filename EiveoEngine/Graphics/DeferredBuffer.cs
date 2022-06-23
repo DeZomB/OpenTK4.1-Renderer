@@ -44,38 +44,38 @@ public class DeferredBuffer : Shader
 	private const string FragmentShader = @"
 		#version 410 core
 
-		uniform uMaterial
-		{
-			vec4 uAlbedoColor;
-			vec4 uSpecularColor;
-			vec4 uEmissiveColor;
-			vec4 uCubeColor;
+	    uniform uMaterial
+        {
+            vec4 uAlbedoColor;
+            vec4 uSpecularColor;
+            vec4 uEmissiveColor;
+            vec4 uCubeColor;
 
-			int uAlbedoMapBound;
-			int uNormalMapBound;
-			int uSpecularMapBound;
-			int uEmissiveMapBound;
-			int uCubeMapBound;
-		};
+            int uAlbedoMapBound;
+            int uNormalMapBound;
+            int uSpecularMapBound;
+            int uEmissiveMapBound;
+            int uCubeMapBound;
+        };
 
-		// Workaround for not having bindless textures...
-		uniform sampler2D uAlbedoMap;
-		uniform sampler2D uNormalMap;
-		uniform sampler2D uSpecularMap;
-		uniform sampler2D uEmissiveMap;
-		uniform samplerCube uCubeMap;
+        // Workaround for not having bindless textures...
+        uniform sampler2D uAlbedoMap;
+        uniform sampler2D uNormalMap;
+        uniform sampler2D uSpecularMap;
+        uniform sampler2D uEmissiveMap;
+        uniform samplerCube uCubeMap;
 
 		in vec3 vPosition;
 		in mat3 vTbn;
 		in vec2 vUv;
 		in vec3 vCubeUv;
 
-		out vec4 fPosition;
-		out vec4 fNormal;
-		out vec4 fAlbedo;
-		out vec4 fSpecular;
-		out vec4 fEmissive;
-		out vec4 fCube;
+		layout(location = 0)  out vec4 fPosition;
+		layout(location = 1) out vec4 fNormal;
+		layout(location = 2) out vec4 fAlbedo;
+		layout(location = 3) out vec4 fSpecular;
+		layout(location = 4) out vec4 fEmissive;
+		layout(location = 5) out vec4 fCube;
 
 		void main()
 		{
