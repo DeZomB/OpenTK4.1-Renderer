@@ -84,6 +84,9 @@ public class DeferredBuffer : Shader
 			fSpecular = (uSpecularMapBound == 1 ? texture(uSpecularMap, vUv) : vec4(1.0, 1.0, 1.0, 1.0)) * uSpecularColor;
 			fEmissive = (uEmissiveMapBound == 1 ? texture(uEmissiveMap, vUv) : vec4(1.0, 1.0, 1.0, 1.0)) * uEmissiveColor;
 			fCube = (uCubeMapBound == 1 ? texture(uCubeMap, vCubeUv) : vec4(1.0, 1.0, 1.0, 1.0)) * uCubeColor;
+
+			if (fAlbedo.w == 0.0 && fEmissive.w == 0.0 && fCube.w == 0.0)
+				discard;
 		}
 	";
 
