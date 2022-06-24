@@ -58,7 +58,6 @@ public class DeferredBuffer : Shader
 			int uCubeMapBound;
 		};
 
-		// Workaround for not having bindless textures...
 		uniform sampler2D uAlbedoMap;
 		uniform sampler2D uNormalMap;
 		uniform sampler2D uSpecularMap;
@@ -160,7 +159,6 @@ public class DeferredBuffer : Shader
 		GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 		GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, 0);
 
-		// Workaround for not having bindless textures...
 		GL.UseProgram(this.Program);
 
 		GL.Uniform1(GL.GetUniformLocation(this.Program, "uAlbedoMap"), 0);
@@ -224,33 +222,36 @@ public class DeferredBuffer : Shader
 		GL.UniformMatrix4(this.view, false, ref view);
 		GL.UniformMatrix4(this.projection, false, ref projection);
 
-		foreach (var modelInstance in scene.ModelInstances)
+		foreach (var entry in scene.ModelInstances.GroupBy(instance => instance.Material))
 		{
-			var matrix = modelInstance.Transform;
+			GL.BindBufferBase(BufferRangeTarget.UniformBuffer, this.material, entry.Key.Buffer);
 
-			GL.UniformMatrix4(this.model, false, ref matrix);
-			GL.BindBufferBase(BufferRangeTarget.UniformBuffer, this.material, modelInstance.Material.Buffer);
-
-			// Workaround for not having bindless textures...
+			// Workaround for not having Bindless Textures...
 			GL.ActiveTexture(TextureUnit.Texture0);
-			GL.BindTexture(TextureTarget.Texture2D, modelInstance.Material.AlbedoMap?.Id ?? 0);
+			GL.BindTexture(TextureTarget.Texture2D, entry.Key.AlbedoMap?.Id ?? 0);
 
 			GL.ActiveTexture(TextureUnit.Texture1);
-			GL.BindTexture(TextureTarget.Texture2D, modelInstance.Material.NormalMap?.Id ?? 0);
+			GL.BindTexture(TextureTarget.Texture2D, entry.Key.NormalMap?.Id ?? 0);
 
 			GL.ActiveTexture(TextureUnit.Texture2);
-			GL.BindTexture(TextureTarget.Texture2D, modelInstance.Material.SpecularMap?.Id ?? 0);
+			GL.BindTexture(TextureTarget.Texture2D, entry.Key.SpecularMap?.Id ?? 0);
 
 			GL.ActiveTexture(TextureUnit.Texture3);
-			GL.BindTexture(TextureTarget.Texture2D, modelInstance.Material.EmissiveMap?.Id ?? 0);
+			GL.BindTexture(TextureTarget.Texture2D, entry.Key.EmissiveMap?.Id ?? 0);
 
 			GL.ActiveTexture(TextureUnit.Texture4);
-			GL.BindTexture(TextureTarget.TextureCubeMap, modelInstance.Material.CubeMap?.Id ?? 0);
+			GL.BindTexture(TextureTarget.TextureCubeMap, entry.Key.CubeMap?.Id ?? 0);
 
-			modelInstance.Model.Draw();
+			foreach (var modelInstance in entry)
+			{
+				var matrix = modelInstance.Transform;
+				GL.UniformMatrix4(this.model, false, ref matrix);
+
+				modelInstance.Model.Draw();
+			}
 		}
 
-		// Workaround for not having bindless textures...
+		// Workaround for not having Bindless Textures...
 		GL.ActiveTexture(TextureUnit.Texture4);
 		GL.BindTexture(TextureTarget.TextureCubeMap, 0);
 

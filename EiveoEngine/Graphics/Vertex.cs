@@ -2,7 +2,7 @@ namespace EiveoEngine.Graphics;
 
 using OpenTK.Mathematics;
 
-public class Vertex
+public struct Vertex
 {
 	public readonly Vector3 Position;
 	public readonly Vector3 Normal;

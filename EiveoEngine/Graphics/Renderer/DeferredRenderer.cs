@@ -5,16 +5,20 @@ using Cameras;
 public class DeferredRenderer
 {
 	public readonly DeferredBuffer DeferredBuffer;
-	private readonly DeferredDebugger deferredDebugger;
 	private readonly LightRenderer lightRenderer;
 	private readonly ShadowRenderer shadowRenderer;
+	private readonly DeferredDebugger deferredDebugger;
+	private readonly DeferredOutput deferredOutput;
+
+	public bool Debug = false;
 
 	public DeferredRenderer()
 	{
 		this.DeferredBuffer = new DeferredBuffer();
-		this.deferredDebugger = new DeferredDebugger();
 		this.lightRenderer = new LightRenderer();
 		this.shadowRenderer = new ShadowRenderer();
+		this.deferredDebugger = new DeferredDebugger();
+		this.deferredOutput = new DeferredOutput();
 	}
 
 	public void Draw(Camera camera, Scene scene)
@@ -26,6 +30,10 @@ public class DeferredRenderer
 		this.DeferredBuffer.Draw(camera, scene);
 		this.lightRenderer.Draw(this.DeferredBuffer, camera, scene);
 		this.shadowRenderer.Draw(this.DeferredBuffer);
-		this.deferredDebugger.Draw(this.DeferredBuffer, this.lightRenderer, this.shadowRenderer);
+
+		if (this.Debug)
+			this.deferredDebugger.Draw(this.DeferredBuffer, this.lightRenderer, this.shadowRenderer);
+		else
+			this.deferredOutput.Draw(this.DeferredBuffer, this.lightRenderer, this.shadowRenderer);
 	}
 }

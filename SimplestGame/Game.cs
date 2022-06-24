@@ -169,6 +169,9 @@ public class Game : GameWindow
 			else if (this.CursorState == CursorState.Grabbed && !this.MouseState.IsButtonDown(MouseButton.Button1))
 				this.CursorState = CursorState.Normal;
 
+			if (this.KeyboardState.IsKeyPressed(Keys.Q))
+				this.deferredRenderer.Debug = !this.deferredRenderer.Debug;
+
 			this.ProcessMovement(args);
 		}
 		else if (this.CursorState == CursorState.Grabbed)

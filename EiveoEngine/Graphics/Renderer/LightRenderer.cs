@@ -217,6 +217,7 @@ public class LightRenderer : Shader
 		GL.ActiveTexture(TextureUnit.Texture3);
 		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Specular.Id);
 
+		// Workaround for not having Shader Storage Buffer Objects...
 		var lightBatches = scene.Lights.Select((value, index) => new { Value = value, Index = index })
 			.GroupBy(i => i.Index / 512, v => v.Value)
 			.Select(e => e.ToArray())
