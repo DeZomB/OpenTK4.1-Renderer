@@ -171,6 +171,7 @@ public class LightRenderer : Shader
 		this.Output = new FrameBufferTexture(FramebufferAttachment.ColorAttachment0);
 		GL.DrawBuffers(1, new[] { DrawBuffersEnum.ColorAttachment0 });
 		GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+		
 		this.buffer = GL.GenBuffer();
 		this.uniforms = GL.GetUniformBlockIndex(this.Program, "uUniforms");
 
@@ -217,6 +218,7 @@ public class LightRenderer : Shader
 		GL.ActiveTexture(TextureUnit.Texture3);
 		GL.BindTexture(TextureTarget.Texture2D, deferredBuffer.Specular.Id);
 
+		// TODO we might want to cache this!
 		// Workaround for not having Shader Storage Buffer Objects...
 		var lightBatches = scene.Lights.Select((value, index) => new { Value = value, Index = index })
 			.GroupBy(i => i.Index / 512, v => v.Value)

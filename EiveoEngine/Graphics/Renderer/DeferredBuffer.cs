@@ -2,6 +2,7 @@ namespace EiveoEngine.Graphics.Renderer;
 
 using Cameras;
 using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 using Textures;
 
 public class DeferredBuffer : Shader
@@ -10,7 +11,7 @@ public class DeferredBuffer : Shader
 	private const string VertexShader = @"
 		#version 410 core
 
-		uniform mat4 uModel;
+		uniform mat4 uModel[128];
 		uniform mat4 uView;
 		uniform mat4 uProjection;
 
@@ -27,16 +28,16 @@ public class DeferredBuffer : Shader
 
 		void main()
 		{
-			gl_Position = uProjection * uView * uModel * vec4(aPosition, 1.0);
-			vPosition = (uModel * vec4(aPosition, 1.0)).xyz;
+			gl_Position = uProjection * uView * uModel[gl_InstanceID] * vec4(aPosition, 1.0);
+			vPosition = (uModel[gl_InstanceID] * vec4(aPosition, 1.0)).xyz;
 
-			vec3 T = normalize(vec3(uModel * vec4(aTangent, 0.0)));
-			vec3 B = normalize(vec3(uModel * vec4(aBiTangent, 0.0)));
-			vec3 N = normalize(vec3(uModel * vec4(aNormal, 0.0)));
+			vec3 T = normalize(vec3(uModel[gl_InstanceID] * vec4(aTangent, 0.0)));
+			vec3 B = normalize(vec3(uModel[gl_InstanceID] * vec4(aBiTangent, 0.0)));
+			vec3 N = normalize(vec3(uModel[gl_InstanceID] * vec4(aNormal, 0.0)));
 			vTbn = mat3(T, B, N);
 
 			vUv = aUv;
-			vCubeUv = (inverse(mat4(mat3(uView))) * uView * uModel * vec4(aPosition, 1.0)).xyz * vec3(-1.0, -1.0, 1.0);
+			vCubeUv = (inverse(mat4(mat3(uView))) * uView * uModel[gl_InstanceID] * vec4(aPosition, 1.0)).xyz * vec3(-1.0, -1.0, 1.0);
 		}
 	";
 
@@ -169,7 +170,6 @@ public class DeferredBuffer : Shader
 		GL.Uniform1(GL.GetUniformLocation(this.Program, "uSpecularMap"), 2);
 		GL.Uniform1(GL.GetUniformLocation(this.Program, "uEmissiveMap"), 3);
 		GL.Uniform1(GL.GetUniformLocation(this.Program, "uCubeMap"), 4);
-
 		GL.UseProgram(0);
 	}
 
@@ -211,7 +211,7 @@ public class DeferredBuffer : Shader
 		GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, 0);
 	}
 
-	public void Draw(Camera camera, Scene scene)
+	public unsafe void Draw(Camera camera, Scene scene)
 	{
 		GL.BindFramebuffer(FramebufferTarget.Framebuffer, this.framebuffer);
 
@@ -225,32 +225,47 @@ public class DeferredBuffer : Shader
 		GL.UniformMatrix4(this.view, false, ref view);
 		GL.UniformMatrix4(this.projection, false, ref projection);
 
-		foreach (var entry in scene.ModelInstances.GroupBy(instance => instance.Material))
+		// TODO we might want to cache this!
+		foreach (var materialGroup in scene.ModelInstances.GroupBy(instance => instance.Material))
 		{
-			GL.BindBufferBase(BufferRangeTarget.UniformBuffer, this.material, entry.Key.Buffer);
+			GL.BindBufferBase(BufferRangeTarget.UniformBuffer, this.material, materialGroup.Key.Buffer);
 
 			// Workaround for not having Bindless Textures...
 			GL.ActiveTexture(TextureUnit.Texture0);
-			GL.BindTexture(TextureTarget.Texture2D, entry.Key.AlbedoMap?.Id ?? 0);
+			GL.BindTexture(TextureTarget.Texture2D, materialGroup.Key.AlbedoMap?.Id ?? 0);
 
 			GL.ActiveTexture(TextureUnit.Texture1);
-			GL.BindTexture(TextureTarget.Texture2D, entry.Key.NormalMap?.Id ?? 0);
+			GL.BindTexture(TextureTarget.Texture2D, materialGroup.Key.NormalMap?.Id ?? 0);
 
 			GL.ActiveTexture(TextureUnit.Texture2);
-			GL.BindTexture(TextureTarget.Texture2D, entry.Key.SpecularMap?.Id ?? 0);
+			GL.BindTexture(TextureTarget.Texture2D, materialGroup.Key.SpecularMap?.Id ?? 0);
 
 			GL.ActiveTexture(TextureUnit.Texture3);
-			GL.BindTexture(TextureTarget.Texture2D, entry.Key.EmissiveMap?.Id ?? 0);
+			GL.BindTexture(TextureTarget.Texture2D, materialGroup.Key.EmissiveMap?.Id ?? 0);
 
 			GL.ActiveTexture(TextureUnit.Texture4);
-			GL.BindTexture(TextureTarget.TextureCubeMap, entry.Key.CubeMap?.Id ?? 0);
+			GL.BindTexture(TextureTarget.TextureCubeMap, materialGroup.Key.CubeMap?.Id ?? 0);
 
-			foreach (var modelInstance in entry)
+			// TODO we might want to cache this!
+			foreach (var modelGroup in materialGroup.GroupBy(entry => entry.Model))
 			{
-				var matrix = modelInstance.Transform;
-				GL.UniformMatrix4(this.model, false, ref matrix);
+				// Workaround for not having Shader Storage Buffer Objects...
+				var modelBatches = modelGroup.Select((value, index) => new { Value = value, Index = index })
+					.GroupBy(i => i.Index / 128, v => v.Value)
+					.Select(e => e.ToArray())
+					.ToArray();
 
-				modelInstance.Model.Draw();
+				foreach (var modelInstances in modelBatches)
+				{
+					var data = new Matrix4[128];
+
+					for (var i = 0; i < modelInstances.Length; i++)
+						data[i] = modelInstances[i].Transform;
+
+					GL.UniformMatrix4(this.model, 128, false, ref data[0].Row0.X);
+
+					modelGroup.Key.Draw(modelInstances.Length);
+				}
 			}
 		}
 

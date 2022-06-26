@@ -11,6 +11,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using System.Diagnostics;
 using System.Drawing;
 
 public class Game : GameWindow
@@ -229,12 +230,18 @@ public class Game : GameWindow
 
 	protected override void OnRenderFrame(FrameEventArgs args)
 	{
+		var stopwatch = new Stopwatch();
+		stopwatch.Start();
+
 		GL.Viewport(0, 0, this.ClientSize.X, this.ClientSize.Y);
 		GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 		this.camera.Update(this.ClientSize);
 
 		this.deferredRenderer.Draw(this.camera, this.scene);
+
+		stopwatch.Stop();
+		this.Title = $"{1000 / stopwatch.ElapsedMilliseconds}";
 
 		this.SwapBuffers();
 	}
