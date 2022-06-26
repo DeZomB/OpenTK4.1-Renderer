@@ -114,11 +114,11 @@ public class Model : IDisposable
 		return data.ToArray();
 	}
 
-	public void Draw()
+	public void Draw(int instances)
 	{
 		GL.BindVertexArray(this.vao);
 
-		GL.DrawElements(PrimitiveType.Triangles, this.elements, DrawElementsType.UnsignedInt, 0);
+		GL.DrawElementsInstanced(PrimitiveType.Triangles, this.elements, DrawElementsType.UnsignedInt, IntPtr.Zero, instances);
 
 		GL.BindVertexArray(0);
 	}
